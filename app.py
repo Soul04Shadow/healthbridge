@@ -1,12 +1,13 @@
 from flask import Flask, render_template, jsonify, request
 from src.helper import download_hugging_face_embeddings
 from langchain_pinecone import PineconeVectorStore
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 from src.prompt import *
+import json
 import os
 
 
@@ -15,11 +16,28 @@ app = Flask(__name__)
 
 load_dotenv()
 
-PINECONE_API_KEY=os.environ.get('PINECONE_API_KEY')
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
+PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
+GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY')
+
+if not PINECONE_API_KEY:
+    raise EnvironmentError("PINECONE_API_KEY is required to run the application.")
+
+if not GOOGLE_API_KEY:
+    raise EnvironmentError("GOOGLE_API_KEY is required to use the Gemini client.")
 
 os.environ["PINECONE_API_KEY"] = PINECONE_API_KEY
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
+
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_TEMPERATURE = float(os.environ.get("GEMINI_TEMPERATURE", "0.2"))
+
+gemini_safety_settings_raw = os.environ.get("GEMINI_SAFETY_SETTINGS")
+gemini_safety_settings = None
+if gemini_safety_settings_raw:
+    try:
+        gemini_safety_settings = json.loads(gemini_safety_settings_raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError("GEMINI_SAFETY_SETTINGS must be valid JSON if provided.") from exc
 
 
 embeddings = download_hugging_face_embeddings()
@@ -36,7 +54,15 @@ docsearch = PineconeVectorStore.from_existing_index(
 
 retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k":3})
 
-chatModel = ChatOpenAI(model="gpt-4o")
+chat_model_kwargs = {
+    "model": GEMINI_MODEL,
+    "temperature": GEMINI_TEMPERATURE,
+}
+
+if gemini_safety_settings is not None:
+    chat_model_kwargs["safety_settings"] = gemini_safety_settings
+
+chatModel = ChatGoogleGenerativeAI(**chat_model_kwargs)
 prompt = ChatPromptTemplate.from_messages(
     [
         ("system", system_prompt),

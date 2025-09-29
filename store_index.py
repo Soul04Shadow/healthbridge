@@ -8,11 +8,12 @@ from langchain_pinecone import PineconeVectorStore
 load_dotenv()
 
 
-PINECONE_API_KEY=os.environ.get('PINECONE_API_KEY')
-OPENAI_API_KEY=os.environ.get('OPENAI_API_KEY')
+PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
+
+if not PINECONE_API_KEY:
+    raise EnvironmentError("PINECONE_API_KEY is required to create or update the vector store.")
 
 os.environ["PINECONE_API_KEY"] = PINECONE_API_KEY
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 
 extracted_data=load_pdf_file(data='data/')
@@ -42,5 +43,5 @@ index = pc.Index(index_name)
 docsearch = PineconeVectorStore.from_documents(
     documents=text_chunks,
     index_name=index_name,
-    embedding=embeddings, 
+    embedding=embeddings,
 )
