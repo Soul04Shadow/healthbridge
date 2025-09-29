@@ -24,12 +24,19 @@ conda activate medibot
 pip install -r requirements.txt
 ```
 
+> The requirements file includes the Gemini client libraries (`langchain-google-genai` and `google-generativeai`) needed for the new chat model. Ensure your Python environment can install these packages before continuing.
 
-### Create a `.env` file in the root directory and add your Pinecone & openai credentials as follows:
+
+### Create a `.env` file in the root directory and add your Pinecone & Gemini credentials as follows (see `.env.example` for a template):
 
 ```ini
 PINECONE_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-OPENAI_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+GOOGLE_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Optional Gemini configuration overrides
+# GEMINI_MODEL = "gemini-1.5-flash"
+# GEMINI_TEMPERATURE = "0.2"
+# GEMINI_SAFETY_SETTINGS = '{"HARASSMENT":"BLOCK_NONE"}'
 ```
 
 
@@ -54,7 +61,7 @@ open up localhost:
 - Python
 - LangChain
 - Flask
-- GPT
+- Gemini (Google Generative AI)
 - Pinecone
 
 
@@ -127,4 +134,4 @@ open up localhost:
    - AWS_DEFAULT_REGION
    - ECR_REPO
    - PINECONE_API_KEY
-   - OPENAI_API_KEY
+   - GOOGLE_API_KEY
