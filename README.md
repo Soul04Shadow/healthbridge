@@ -50,6 +50,22 @@ python store_index.py
 python app.py
 ```
 
+## Persistent chat history
+
+- Conversations are now stored automatically in a SQLite database located at `data/chat_history.sqlite`. Each browser session receives a unique ID so that refreshing the page keeps the prior exchange intact.
+- The `/history` endpoint (session-authenticated) returns the saved turns for the active chat. The chat UI requests this endpoint on load to render previous questions and answers.
+- To reset all saved conversations simply delete the database file:
+
+```bash
+rm -f data/chat_history.sqlite
+```
+
+- Optionally, set a custom Flask secret key when running locally:
+
+```bash
+export FLASK_SECRET_KEY="replace-with-a-secret-value"
+```
+
 Now,
 ```bash
 open up localhost:
